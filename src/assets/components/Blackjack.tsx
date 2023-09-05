@@ -135,7 +135,12 @@ function Blackjack() {
     }
   }
 
-  function dealersTurn() {
+  function dealersTurn(newCards: Cards[]) {
+    let newScore = 0;
+    newCards.forEach((card) => {
+      newScore += card.value;
+    });
+    let myLocalScore = newCards.length == 0 ? myScore : newScore;
     setStood(1);
     setTimeToAct(0);
     let score = dealerScore;
@@ -148,10 +153,10 @@ function Blackjack() {
     if (score > 21) {
       setChips(chips + bet);
       setWin(1);
-    } else if (score < myScore) {
+    } else if (score < myLocalScore) {
       setChips(chips + bet);
       setWin(1);
-    } else if (score > myScore) {
+    } else if (score > myLocalScore) {
       setChips(chips - bet);
       setLoss(1);
     } else {
@@ -168,16 +173,39 @@ function Blackjack() {
     setScoreDealer(newCards);
   }
 
+  function doubleDown() {
+    let randomIndex = Math.floor(Math.random() * 51);
+    const newCards = [...myCards, deck[randomIndex]];
+
+    setMyCards(newCards);
+    setScore(newCards);
+    let newScore = 0;
+    newCards.forEach((card) => {
+      newScore += card.value;
+    });
+    setStood(1);
+    setTimeToAct(0);
+    if (newScore <= 21) {
+      dealersTurn(newCards);
+    } else {
+      setLoss(1);
+    }
+  }
+
   return (
     <div className="App">
       <div className="sidebar">
         <div>
           <p>Available chips: ${chips}</p>
           <p>Current bet: ${bet}</p>
-          <div>
-            <button>Reset Bet</button>
-            <button>Go All-In</button>
-          </div>
+        </div>
+        <div>
+          <button style={{ marginRight: 10 }} onClick={() => setBet(0)}>
+            Reset Bet
+          </button>
+          <button style={{ marginLeft: 10 }} onClick={() => setBet(chips)}>
+            Go All-In
+          </button>
         </div>
         <div>
           <img src={whiteChip} onClick={() => setBet(bet + 1)}></img>
@@ -229,8 +257,24 @@ function Blackjack() {
           )}
           {timeToAct ? (
             <div>
-              <button onClick={dealCard}>Hit</button>
-              <button onClick={dealersTurn}>Stand</button>
+              <button
+                onClick={dealCard}
+                style={{ width: 130, marginRight: 10 }}
+              >
+                Hit
+              </button>
+              <button
+                onClick={() => dealersTurn([])}
+                style={{ width: 130, marginRight: 10, marginLeft: 10 }}
+              >
+                Stand
+              </button>
+              <button
+                onClick={doubleDown}
+                style={{ width: 140, marginLeft: 10 }}
+              >
+                Double Down
+              </button>
             </div>
           ) : (
             ""
