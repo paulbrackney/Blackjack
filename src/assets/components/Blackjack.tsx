@@ -23,6 +23,7 @@ function Blackjack() {
   const [win, setWin] = useState(0);
   const [loss, setLoss] = useState(0);
   const [push, setPush] = useState(0);
+  const [remainingChips, setRemainingChips] = useState(75);
 
   let index = 0;
   let dealerIndex = 0;
@@ -74,7 +75,16 @@ function Blackjack() {
     });
   });
 
+  function increaseBet(newBet: number) {
+    if (newBet <= remainingChips) {
+      setBet(bet + newBet);
+      setRemainingChips(chips - (bet + newBet));
+    }
+  }
+
   function startGame() {
+    setChips(chips - bet);
+    setRemainingChips(chips - bet);
     setTimeToAct(1);
     setStood(0);
     setLoss(0);
@@ -135,12 +145,13 @@ function Blackjack() {
     }
   }
 
-  function dealersTurn(newCards: Cards[]) {
+  function dealersTurn(newCards: Cards[], isDoubledDown: boolean) {
     let newScore = 0;
     newCards.forEach((card) => {
       newScore += card.value;
     });
     let myLocalScore = newCards.length == 0 ? myScore : newScore;
+    let myLocalBet = isDoubledDown ? bet * 3 : bet * 2;
     setStood(1);
     setTimeToAct(0);
     let score = dealerScore;
@@ -151,15 +162,22 @@ function Blackjack() {
       score += deck[randomIndex].value;
     }
     if (score > 21) {
-      setChips(chips + bet);
+      setChips(chips + myLocalBet);
+      setRemainingChips(chips + myLocalBet - bet);
       setWin(1);
     } else if (score < myLocalScore) {
-      setChips(chips + bet);
+      setChips(chips + myLocalBet);
+      setRemainingChips(chips + myLocalBet - bet);
       setWin(1);
     } else if (score > myLocalScore) {
-      setChips(chips - bet);
+      if (isDoubledDown) {
+        setChips(chips - bet);
+        setRemainingChips(chips - bet);
+      }
       setLoss(1);
     } else {
+      setChips(chips + bet);
+      setRemainingChips(chips);
       setPush(1);
     }
     setDealerCards(cards);
@@ -186,49 +204,86 @@ function Blackjack() {
     setStood(1);
     setTimeToAct(0);
     if (newScore <= 21) {
-      dealersTurn(newCards);
+      dealersTurn(newCards, true);
     } else {
       setLoss(1);
+      setChips(chips - bet * 2);
+      setRemainingChips(chips - bet * 3);
     }
+  }
+
+  function resetBet() {
+    setBet(0);
+    setRemainingChips(chips);
   }
 
   return (
     <div className="App">
-      <div className="sidebar">
+      <div
+        className="sidebar"
+        style={timeToAct == 1 ? { pointerEvents: "none" } : {}}
+      >
         <div>
           <p>Available chips: ${chips}</p>
           <p>Current bet: ${bet}</p>
         </div>
         <div>
-          <button style={{ marginRight: 10 }} onClick={() => setBet(0)}>
+          <button style={{ marginRight: 10 }} onClick={resetBet}>
             Reset Bet
           </button>
-          <button style={{ marginLeft: 10 }} onClick={() => setBet(chips)}>
+          <button
+            style={{ marginLeft: 10 }}
+            onClick={() => increaseBet(remainingChips)}
+          >
             Go All-In
           </button>
         </div>
         <div>
-          <img src={whiteChip} onClick={() => setBet(bet + 1)}></img>
+          <img
+            className="logo"
+            src={whiteChip}
+            onClick={() => increaseBet(1)}
+          ></img>
           <p style={{ marginTop: -10 }}>$1</p>
         </div>
         <div>
-          <img src={redChip} onClick={() => setBet(bet + 5)}></img>
+          <img
+            className="logo"
+            src={redChip}
+            onClick={() => increaseBet(5)}
+          ></img>
           <p style={{ marginTop: -10 }}>$5</p>
         </div>
         <div>
-          <img src={blueChip} onClick={() => setBet(bet + 10)}></img>
+          <img
+            className="logo"
+            src={blueChip}
+            onClick={() => increaseBet(10)}
+          ></img>
           <p style={{ marginTop: -10 }}>$10</p>
         </div>
         <div>
-          <img src={greenChip} onClick={() => setBet(bet + 25)}></img>
+          <img
+            className="logo"
+            src={greenChip}
+            onClick={() => increaseBet(25)}
+          ></img>
           <p style={{ marginTop: -10 }}>$25</p>
         </div>
         <div>
-          <img src={blackChip} onClick={() => setBet(bet + 100)}></img>
+          <img
+            className="logo"
+            src={blackChip}
+            onClick={() => increaseBet(100)}
+          ></img>
           <p style={{ marginTop: -10 }}>$100</p>
         </div>
         <div>
-          <img src={purpleChip} onClick={() => setBet(bet + 500)}></img>
+          <img
+            className="logo"
+            src={purpleChip}
+            onClick={() => increaseBet(500)}
+          ></img>
           <p style={{ marginTop: -10 }}>$500</p>
         </div>
       </div>
@@ -264,24 +319,28 @@ function Blackjack() {
                 Hit
               </button>
               <button
-                onClick={() => dealersTurn([])}
+                onClick={() => dealersTurn([], false)}
                 style={{ width: 130, marginRight: 10, marginLeft: 10 }}
               >
                 Stand
               </button>
-              <button
-                onClick={doubleDown}
-                style={{ width: 140, marginLeft: 10 }}
-              >
-                Double Down
-              </button>
+              {remainingChips >= bet && myCards.length == 2 ? (
+                <button
+                  onClick={doubleDown}
+                  style={{ width: 140, marginLeft: 10 }}
+                >
+                  Double Down
+                </button>
+              ) : (
+                ""
+              )}
             </div>
           ) : (
             ""
           )}
           <h2>
             {isBusted ? "Bust!" : ""}
-            {isBlackjack ? "Blackjack!" : ""}
+            {isBlackjack ? "Blackjack! " : ""}
             {loss ? " Try again! " : ""}
             {win ? "Nice win!" : ""}
             {push ? "Push with dealer... try again!" : ""}
