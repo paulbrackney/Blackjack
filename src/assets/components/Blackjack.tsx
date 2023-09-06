@@ -84,8 +84,16 @@ function Blackjack() {
   }
 
   function startGame() {
-    setChips(chips - bet);
-    setRemainingChips(chips - bet);
+    if (chips == 0) {
+      setBet(0);
+      setRemainingChips(0);
+    } else if (chips < bet) {
+      setBet(chips);
+      setRemainingChips(0);
+    } else {
+      setChips(chips - bet);
+      setRemainingChips(chips - bet);
+    }
     setTimeToAct(1);
     setStood(0);
     setLoss(0);
@@ -137,7 +145,6 @@ function Blackjack() {
       setBusted(1);
       setLoss(1);
       setTimeToAct(0);
-      setChips(chips - bet);
     } else if (score === 21 && newCards.length == 2) {
       setBlackjack(1);
       setWin(1);
