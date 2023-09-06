@@ -145,7 +145,7 @@ function Blackjack() {
       setChips(chips + 1.5 * bet);
     } else if (score === 21) {
       setTimeToAct(0);
-      dealersTurn([], false);
+      dealersTurn(newCards, false);
     }
   }
 
