@@ -6,6 +6,7 @@ import blueChip from "../images/blue-chip.png";
 import purpleChip from "../images/purple-chip.png";
 import greenChip from "../images/green-chip.png";
 import redChip from "../images/red-chip.png";
+import Card from "../components/Card";
 
 function Blackjack() {
   const [count, setCount] = useState(0);
@@ -350,36 +351,32 @@ function Blackjack() {
           {playing ? (
             <div>
               <h2>My Cards:</h2>
-              {myCards.map((item) => {
-                index += 1;
-                return (
-                  <p
-                    className={
-                      item.suit === "♦" || item.suit === "♥" ? "red" : "black"
-                    }
-                    key={`${item.name}${item.suit}${index}`}
-                  >
-                    {item.name}
-                    {item.suit}
-                  </p>
-                );
-              })}
+              <div style={{ display: "inline-block" }}>
+                {myCards.map((item) => {
+                  index += 1;
+                  return (
+                    <Card
+                      suit={item.suit}
+                      name={item.name}
+                      key={`${item.name}${item.suit}${index}`}
+                    ></Card>
+                  );
+                })}
+              </div>
               <h3>{myScore}</h3>
               <h2>Dealer's Cards:</h2>
-              {dealerCards.map((item) => {
-                dealerIndex += 1;
-                return (
-                  <p
-                    className={
-                      item.suit === "♦" || item.suit === "♥" ? "red" : "black"
-                    }
-                    key={`${item.name}${item.suit}${dealerIndex}`}
-                  >
-                    {item.name}
-                    {item.suit}
-                  </p>
-                );
-              })}
+              <div style={{ display: "inline-block" }}>
+                {dealerCards.map((item) => {
+                  dealerIndex += 1;
+                  return (
+                    <Card
+                      suit={item.suit}
+                      name={item.name}
+                      key={`${item.name}${item.suit}${dealerIndex}`}
+                    ></Card>
+                  );
+                })}
+              </div>
               <h3>{dealerScore}</h3>
             </div>
           ) : (
